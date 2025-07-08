@@ -5,11 +5,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
+	"github.com/labstack/echo/v4"
 )
 
 type Handler struct {
@@ -17,8 +17,9 @@ type Handler struct {
 }
 
 var (
-	BadRequestError     = errors.New("bad request")
-	InternalServerError = errors.New("internal server error")
+	BadRequestError          = errors.New("bad request")
+	InternalServerError      = errors.New("internal server error")
+	CountryNotSupportedError = errors.New("country not supported")
 )
 
 func New(accountService accounts.Service) *Handler {
@@ -32,7 +33,10 @@ func (h *Handler) GetAccount(c echo.Context) error {
 
 	// TODO: decide, should config be selected in middlware and passed to handler/context?
 	countryString := c.Request().Header.Get("country")
-	country := countries.GetCountry(countryString)
+	country, err := countries.GetCountry(countryString)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
+	}
 
 	countryConfig, err := config.SelectConfig(country, mappings.GetAccountRoute)
 	if err != nil {

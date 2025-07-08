@@ -1,9 +1,13 @@
 package countries
 
-import "github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
+import (
+	"fmt"
+
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
+)
 
 type (
-	Country string
+	Country       string
 	CountryConfig = mappings.ServiceMapping
 )
 
@@ -19,6 +23,10 @@ var (
 	}
 )
 
-func GetCountry(country string) Country {
-	return CountryMap[country]
+func GetCountry(country string) (Country, error) {
+	result, ok := CountryMap[country]
+	if !ok {
+		return "", fmt.Errorf("country not found")
+	}
+	return result, nil
 }

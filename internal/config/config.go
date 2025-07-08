@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
-	"github.com/sumup/test-router/internal/config/countries"
-	"github.com/sumup/test-router/internal/config/mappings"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
 type RoutesConfig map[countries.Country]countries.CountryConfig

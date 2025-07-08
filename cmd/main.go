@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/sumup/test-router/api/routes"
+	"github.com/Nick-Spencer-SumUp/test-router/api/routes"
 )
 
 func main() {

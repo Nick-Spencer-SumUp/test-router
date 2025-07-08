@@ -1,4 +1,4 @@
-module github.com/sumup/test-router
+module github.com/Nick-Spencer-SumUp/test-router
 
 go 1.23.5
 

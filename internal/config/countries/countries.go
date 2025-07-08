@@ -1,6 +1,6 @@
 package countries
 
-import "github.com/sumup/test-router/internal/config/mappings"
+import "github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 
 type (
 	Country string

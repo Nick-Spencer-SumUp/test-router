@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/sumup/test-router/internal/accounts"
-	"github.com/sumup/test-router/internal/config"
-	"github.com/sumup/test-router/internal/config/countries"
-	"github.com/sumup/test-router/internal/config/mappings"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
 type Handler struct {

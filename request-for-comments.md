@@ -95,6 +95,20 @@ var CountryMap = map[string]Country{
 }
 ```
 
+### Service Mapping Example
+```go
+package mappings
+
+var AtomicMapping = ServiceMapping{
+	BaseURL: "https://api.atomic.com", // this will come from env variables 
+	Endpoints: map[Route]Endpoint{
+		GetAccountRoute: {
+			Method: GET,
+			URI: "/accounts",
+		},
+	},
+}
+```
 ### Service Mapping Pattern
 
 ```go

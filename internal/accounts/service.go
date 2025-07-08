@@ -13,13 +13,6 @@ type (
 	AccountRequest struct {
 		Mid string `json:"mid"`
 	}
-
-	AccountInfo struct {
-		AccountNumber  string `json:"account_number"`
-		AccountName    string `json:"account_name"`
-		AccountType    string `json:"account_type"`
-		AccountBalance string `json:"account_balance"`
-	}
 )
 
 type Service struct {

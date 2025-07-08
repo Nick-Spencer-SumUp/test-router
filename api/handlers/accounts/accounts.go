@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -48,5 +49,24 @@ func (h *Handler) GetAccount(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalServerError)
 	}
 
-	return c.JSON(http.StatusOK, response)
+	return h.streamResponse(c, response)
+}
+
+func (h *Handler) streamResponse(c echo.Context, response *http.Response) error {
+	defer response.Body.Close()
+
+	for key, values := range response.Header {
+		for _, value := range values {
+			c.Response().Header().Add(key, value)
+		}
+	}
+
+	c.Response().WriteHeader(response.StatusCode)
+
+	_, err := io.Copy(c.Response().Writer, response.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

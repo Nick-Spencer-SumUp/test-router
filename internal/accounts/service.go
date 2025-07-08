@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/sumup/test-router/internal/config"
+	"github.com/sumup/test-router/internal/config/countries"
+	"github.com/sumup/test-router/internal/config/mappings"
 )
 
 type (
@@ -28,28 +29,28 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s Service) GetAccount(config config.EndpointConfig, accountRequest AccountRequest) (AccountInfo, error) {
+func (s Service) GetAccount(cfg countries.CountryConfig, accountRequest AccountRequest) (*http.Response, error) {
 	requestBody, err := json.Marshal(accountRequest)
 	if err != nil {
-		return AccountInfo{}, err
+		return nil, err
 	}
 
-	response, err := s.doRequest("GET", config, requestBody)
+	endpointConfig, err := cfg.GetEndpointConfig(mappings.GetAccountRoute)
 	if err != nil {
-		return AccountInfo{}, err
+		return nil, err
 	}
 
-	var accountInfo AccountInfo
-	err = json.NewDecoder(response.Body).Decode(&accountInfo)
+	response, err := s.doRequest(endpointConfig.GetMethod(), endpointConfig, requestBody)
 	if err != nil {
-		return AccountInfo{}, err
+		return nil, err
 	}
 
-	return accountInfo, nil
+	// Return the raw response without decoding it for streaming
+	return response, nil
 }
 
-func (s Service) doRequest(method string, config config.EndpointConfig, requestBody []byte) (*http.Response, error) {
-	request, err := http.NewRequest(method, config.BaseURL+config.Endpoint, bytes.NewBuffer(requestBody))
+func (s Service) doRequest(method string, endpoint mappings.EndpointConfig, requestBody []byte) (*http.Response, error) {
+	request, err := http.NewRequest(method, endpoint.BaseURL+endpoint.Endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}

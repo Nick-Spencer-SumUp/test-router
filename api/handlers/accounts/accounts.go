@@ -7,6 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/sumup/test-router/internal/accounts"
 	"github.com/sumup/test-router/internal/config"
+	"github.com/sumup/test-router/internal/config/countries"
+	"github.com/sumup/test-router/internal/config/mappings"
 )
 
 type Handler struct {
@@ -14,7 +16,7 @@ type Handler struct {
 }
 
 var (
-	BadRequestError = errors.New("bad request")
+	BadRequestError     = errors.New("bad request")
 	InternalServerError = errors.New("internal server error")
 )
 
@@ -29,9 +31,9 @@ func (h *Handler) GetAccount(c echo.Context) error {
 
 	// TODO: decide, should config be selected in middlware and passed to handler/context?
 	countryString := c.Request().Header.Get("country")
-	country := config.GetCountry(countryString)
+	country := countries.GetCountry(countryString)
 
-	routeConfig, err := config.SelectConfig(country, config.GetAccountRoute)
+	countryConfig, err := config.SelectConfig(country, mappings.GetAccountRoute)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, BadRequestError)
 	}
@@ -41,7 +43,7 @@ func (h *Handler) GetAccount(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, BadRequestError)
 	}
 
-	response, err := h.AccountService.GetAccount(routeConfig, requestBody)
+	response, err := h.AccountService.GetAccount(countryConfig, requestBody)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, InternalServerError)
 	}

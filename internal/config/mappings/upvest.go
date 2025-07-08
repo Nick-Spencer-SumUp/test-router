@@ -1,7 +1,7 @@
-package config
+package mappings
 
-var usConfig = CountryConfig{
-	BaseURL: "https://api.atomic.com",
+var UpvestMapping = ServiceMapping{
+	BaseURL: "https://api.upvest.com",
 	Endpoints: map[Route]Endpoint{
 		GetAccountRoute: {
 			Method: GET,

@@ -1,71 +1,25 @@
 package config
 
-import "fmt"
-
-type (
-	Country string
-	Route   string
-	Method  string
-
-	EndpointConfig struct {
-		Endpoint string
-		BaseURL  string
-	}
-
-	CountryConfig struct {
-		Endpoints map[Route]Endpoint
-		BaseURL   string
-	}
-
-	Endpoint struct {
-		Method Method
-		URI    string
-	}
+import (
+	"fmt"
+	"github.com/sumup/test-router/internal/config/countries"
+	"github.com/sumup/test-router/internal/config/mappings"
 )
 
-type RoutesConfig map[Country]CountryConfig
-
-const (
-	US Country = "US"
-	DE Country = "DE"
-
-	GetAccountRoute Route = "GetAccount"
-
-	GET    Method = "GET"
-	POST   Method = "POST"
-	PUT    Method = "PUT"
-	DELETE Method = "DELETE"
-)
+type RoutesConfig map[countries.Country]countries.CountryConfig
 
 var (
 	RouterConfigs = RoutesConfig{
-		US: usConfig,
-		DE: deConfig,
-	}
-
-	CountryMap = map[string]Country{
-		"US": US,
-		"DE": DE,
+		countries.US: countries.USConfig,
+		countries.DE: countries.DEConfig,
 	}
 )
 
-func SelectConfig(country Country, route Route) (EndpointConfig, error) {
+func SelectConfig(country countries.Country, route mappings.Route) (countries.CountryConfig, error) {
 	countryConfig, ok := RouterConfigs[country]
 	if !ok {
-		return EndpointConfig{}, fmt.Errorf("country not supported")
+		return countries.CountryConfig{}, fmt.Errorf("country not supported")
 	}
 
-	endpoint, ok := countryConfig.Endpoints[route]
-	if !ok {
-		return EndpointConfig{}, fmt.Errorf("route not supported")
-	}
-
-	return EndpointConfig{
-		Endpoint: endpoint.URI,
-		BaseURL:  countryConfig.BaseURL,
-	}, nil
-}
-
-func GetCountry(country string) Country {
-	return CountryMap[country]
+	return countryConfig, nil
 }

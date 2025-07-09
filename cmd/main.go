@@ -14,7 +14,7 @@ func main() {
 	// Initialize configuration
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "config/routing.yaml"
+		configPath = "routing/routing.yaml"
 	}
 
 	if err := config.InitConfig(configPath); err != nil {

@@ -1,0 +1,72 @@
+# Service Mappings Configuration
+services:
+  atomic:
+    base_url: "https://api.atomic.com"
+    endpoints:
+      GetAccount:
+        method: "GET"
+        uri: "/accounts"
+      CreateAccount:
+        method: "POST"
+        uri: "/accounts"
+      UpdateAccount:
+        method: "PUT"
+        uri: "/accounts/{id}"
+      DeleteAccount:
+        method: "DELETE"
+        uri: "/accounts/{id}"
+
+  upvest:
+    base_url: "https://api.upvest.com"
+    endpoints:
+      GetAccount:
+        method: "GET"
+        uri: "/accounts"
+      CreateAccount:
+        method: "POST"
+        uri: "/accounts"
+      UpdateAccount:
+        method: "PUT"
+        uri: "/accounts/{id}"
+      DeleteAccount:
+        method: "DELETE"
+        uri: "/accounts/{id}"
+
+# Country to Service Mapping
+countries:
+  US:
+    service: "atomic"
+    region: "north_america"
+    features:
+      - "real_time_payments"
+      - "instant_transfers"
+  
+  DE:
+    service: "upvest"
+    region: "europe"
+    features:
+      - "sepa_transfers"
+      - "euro_payments"
+
+# Environment-specific overrides
+environments:
+  development:
+    services:
+      atomic:
+        base_url: "https://dev-api.atomic.com"
+      upvest:
+        base_url: "https://dev-api.upvest.com"
+  
+  staging:
+    services:
+      atomic:
+        base_url: "https://staging-api.atomic.com"
+      upvest:
+        base_url: "https://staging-api.upvest.com"
+  
+  production:
+    services:
+      atomic:
+        base_url: "https://api.atomic.com"
+      upvest:
+        base_url: "https://api.upvest.com" 

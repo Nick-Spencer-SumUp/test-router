@@ -1,12 +1,25 @@
 package main
 
 import (
+	"log"
+	"os"
+
+	"github.com/Nick-Spencer-SumUp/test-router/api/routes"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/Nick-Spencer-SumUp/test-router/api/routes"
 )
 
 func main() {
+	// Initialize configuration
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "config/routing.yaml"
+	}
+
+	if err := config.InitConfig(configPath); err != nil {
+		log.Fatalf("Failed to initialize configuration: %v", err)
+	}
 
 	// Initialize echo server
 	e := echo.New()
@@ -18,6 +31,10 @@ func main() {
 	// Setup routes
 	accountGroup := e.Group("/accounts")
 	routes.Accounts(accountGroup)
+
+	// Setup admin routes
+	adminGroup := e.Group("/admin")
+	routes.Admin(adminGroup)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":8080"))

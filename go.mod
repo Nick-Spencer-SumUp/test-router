@@ -2,7 +2,10 @@ module github.com/Nick-Spencer-SumUp/test-router
 
 go 1.23.5
 
-require github.com/labstack/echo/v4 v4.13.4
+require (
+	github.com/labstack/echo/v4 v4.13.4
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/labstack/gommon v0.4.2 // indirect

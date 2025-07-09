@@ -23,8 +23,6 @@ func TestYAMLConfigStructures(t *testing.T) {
 		Countries: map[string]YAMLCountry{
 			"US": {
 				Service:  "atomic",
-				Region:   "north_america",
-				Features: []string{"real_time_payments"},
 			},
 		},
 	}

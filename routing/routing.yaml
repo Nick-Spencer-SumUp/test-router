@@ -36,17 +36,9 @@ services:
 countries:
   US:
     service: "atomic"
-    region: "north_america"
-    features:
-      - "real_time_payments"
-      - "instant_transfers"
   
   DE:
     service: "upvest"
-    region: "europe"
-    features:
-      - "sepa_transfers"
-      - "euro_payments"
 
 # Environment-specific overrides
 environments:

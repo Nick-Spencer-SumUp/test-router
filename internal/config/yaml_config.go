@@ -29,8 +29,6 @@ type YAMLEndpoint struct {
 
 type YAMLCountry struct {
 	Service  string   `yaml:"service"`
-	Region   string   `yaml:"region"`
-	Features []string `yaml:"features"`
 }
 
 type YAMLEnvironment struct {

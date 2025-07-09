@@ -1,0 +1,12 @@
+# Countries and their service mappings
+countries:
+  US:
+    service: "atomic"
+  DE:
+    service: "upvest"
+  FR:
+    service: "upvest"
+  UK:
+    service: "upvest"
+  CA:
+    service: "atomic" 

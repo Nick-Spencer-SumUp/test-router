@@ -1,0 +1,17 @@
+# Atomic Service Configuration
+service:
+  name: "atomic"
+  base_url: "https://api.atomic.com"
+  endpoints:
+    GetAccount:
+      method: "GET"
+      uri: "/accounts"
+    CreateAccount:
+      method: "POST"
+      uri: "/accounts"
+    UpdateAccount:
+      method: "PUT"
+      uri: "/accounts/{id}"
+    DeleteAccount:
+      method: "DELETE"
+      uri: "/accounts/{id}" 

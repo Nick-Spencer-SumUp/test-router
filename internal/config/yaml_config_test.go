@@ -22,7 +22,7 @@ func TestYAMLConfigStructures(t *testing.T) {
 		},
 		Countries: map[string]YAMLCountry{
 			"US": {
-				Service:  "atomic",
+				Service: "atomic",
 			},
 		},
 	}
@@ -71,10 +71,10 @@ func TestYAMLConfigStructures(t *testing.T) {
 }
 
 func TestConfigLoader(t *testing.T) {
-	loader := NewConfigLoader("test-config.yaml")
+	loader := NewConfigLoader("test-config-dir")
 
-	if loader.configPath != "test-config.yaml" {
-		t.Errorf("Expected config path to be test-config.yaml, got %s", loader.configPath)
+	if loader.configDir != "test-config-dir" {
+		t.Errorf("Expected config dir to be test-config-dir, got %s", loader.configDir)
 	}
 
 	// Test that loader is properly initialized

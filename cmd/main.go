@@ -12,12 +12,12 @@ import (
 
 func main() {
 	// Initialize configuration
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		configPath = "routing/routing.yaml"
+	configDir := os.Getenv("CONFIG_DIR")
+	if configDir == "" {
+		configDir = "internal/config/countries"
 	}
 
-	if err := config.InitConfig(configPath); err != nil {
+	if err := config.InitConfig(configDir); err != nil {
 		log.Fatalf("Failed to initialize configuration: %v", err)
 	}
 

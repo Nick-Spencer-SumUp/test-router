@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 	"gopkg.in/yaml.v3"
 )
 
-// YAMLConfig represents the structure of the YAML configuration file
+// YAMLConfig represents the combined structure from all configuration files
 type YAMLConfig struct {
 	Services     map[string]YAMLService     `yaml:"services"`
 	Countries    map[string]YAMLCountry     `yaml:"countries"`
@@ -18,6 +19,7 @@ type YAMLConfig struct {
 }
 
 type YAMLService struct {
+	Name      string                  `yaml:"name"`
 	BaseURL   string                  `yaml:"base_url"`
 	Endpoints map[string]YAMLEndpoint `yaml:"endpoints"`
 }
@@ -28,28 +30,41 @@ type YAMLEndpoint struct {
 }
 
 type YAMLCountry struct {
-	Service  string   `yaml:"service"`
+	Service string `yaml:"service"`
 }
 
 type YAMLEnvironment struct {
 	Services map[string]YAMLService `yaml:"services"`
 }
 
-// ConfigLoader handles loading and parsing YAML configuration
+// Individual file structures
+type CountriesFile struct {
+	Countries map[string]YAMLCountry `yaml:"countries"`
+}
+
+type ServiceFile struct {
+	Service YAMLService `yaml:"service"`
+}
+
+type EnvironmentsFile struct {
+	Environments map[string]YAMLEnvironment `yaml:"environments"`
+}
+
+// ConfigLoader handles loading and parsing YAML configuration from multiple files
 type ConfigLoader struct {
-	configPath string
-	config     *YAMLConfig
-	mu         sync.RWMutex
+	configDir string
+	config    *YAMLConfig
+	mu        sync.RWMutex
 }
 
 // NewConfigLoader creates a new configuration loader
-func NewConfigLoader(configPath string) *ConfigLoader {
+func NewConfigLoader(configDir string) *ConfigLoader {
 	return &ConfigLoader{
-		configPath: configPath,
+		configDir: configDir,
 	}
 }
 
-// LoadConfig loads the configuration from the YAML file
+// LoadConfig loads the configuration from multiple YAML files
 func (cl *ConfigLoader) LoadConfig() error {
 	cl.mu.Lock()
 	defer cl.mu.Unlock()
@@ -57,30 +72,35 @@ func (cl *ConfigLoader) LoadConfig() error {
 	// Get environment
 	env := os.Getenv("ENVIRONMENT")
 	if env == "" {
-		env = "development"
+		env = "dev"
 	}
 
-	// Read the config file
-	configFile := cl.configPath
-	if configFile == "" {
-		configFile = "routing/routing.yaml"
+	// Set default config directory
+	configDir := cl.configDir
+	if configDir == "" {
+		configDir = "internal/config/countries"
 	}
 
-	// Get absolute path
-	absPath, err := filepath.Abs(configFile)
-	if err != nil {
-		return fmt.Errorf("failed to get absolute path: %w", err)
+	// Load all configuration files
+	config := &YAMLConfig{
+		Services:     make(map[string]YAMLService),
+		Countries:    make(map[string]YAMLCountry),
+		Environments: make(map[string]YAMLEnvironment),
 	}
 
-	data, err := os.ReadFile(absPath)
-	if err != nil {
-		return fmt.Errorf("failed to read config file %s: %w", absPath, err)
+	// Load countries (now includes service mappings)
+	if err := cl.loadCountries(configDir, config); err != nil {
+		return fmt.Errorf("failed to load countries: %w", err)
 	}
 
-	// Parse YAML
-	var config YAMLConfig
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return fmt.Errorf("failed to parse YAML config: %w", err)
+	// Load services
+	if err := cl.loadServices(configDir, config); err != nil {
+		return fmt.Errorf("failed to load services: %w", err)
+	}
+
+	// Load environments
+	if err := cl.loadEnvironments(configDir, config); err != nil {
+		return fmt.Errorf("failed to load environments: %w", err)
 	}
 
 	// Apply environment-specific overrides
@@ -97,7 +117,80 @@ func (cl *ConfigLoader) LoadConfig() error {
 		}
 	}
 
-	cl.config = &config
+	cl.config = config
+	return nil
+}
+
+// loadCountries loads the countries.yaml file (now includes service mappings)
+func (cl *ConfigLoader) loadCountries(configDir string, config *YAMLConfig) error {
+	countriesPath := filepath.Join(configDir, "countries.yaml")
+	data, err := os.ReadFile(countriesPath)
+	if err != nil {
+		return fmt.Errorf("failed to read countries file %s: %w", countriesPath, err)
+	}
+
+	var countriesFile CountriesFile
+	if err := yaml.Unmarshal(data, &countriesFile); err != nil {
+		return fmt.Errorf("failed to parse countries YAML: %w", err)
+	}
+
+	// Load countries with their service mappings
+	for countryName, countryConfig := range countriesFile.Countries {
+		config.Countries[countryName] = countryConfig
+	}
+
+	return nil
+}
+
+// loadServices loads all service files from the services directory
+func (cl *ConfigLoader) loadServices(configDir string, config *YAMLConfig) error {
+	servicesDir := filepath.Join(configDir, "services")
+	entries, err := os.ReadDir(servicesDir)
+	if err != nil {
+		return fmt.Errorf("failed to read services directory %s: %w", servicesDir, err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yaml") {
+			continue
+		}
+
+		servicePath := filepath.Join(servicesDir, entry.Name())
+		data, err := os.ReadFile(servicePath)
+		if err != nil {
+			return fmt.Errorf("failed to read service file %s: %w", servicePath, err)
+		}
+
+		var serviceFile ServiceFile
+		if err := yaml.Unmarshal(data, &serviceFile); err != nil {
+			return fmt.Errorf("failed to parse service YAML %s: %w", servicePath, err)
+		}
+
+		// Add service to config
+		config.Services[serviceFile.Service.Name] = YAMLService{
+			Name:      serviceFile.Service.Name,
+			BaseURL:   serviceFile.Service.BaseURL,
+			Endpoints: serviceFile.Service.Endpoints,
+		}
+	}
+
+	return nil
+}
+
+// loadEnvironments loads the environments.yaml file
+func (cl *ConfigLoader) loadEnvironments(configDir string, config *YAMLConfig) error {
+	environmentsPath := filepath.Join(configDir, "environments.yaml")
+	data, err := os.ReadFile(environmentsPath)
+	if err != nil {
+		return fmt.Errorf("failed to read environments file %s: %w", environmentsPath, err)
+	}
+
+	var environmentsFile EnvironmentsFile
+	if err := yaml.Unmarshal(data, &environmentsFile); err != nil {
+		return fmt.Errorf("failed to parse environments YAML: %w", err)
+	}
+
+	config.Environments = environmentsFile.Environments
 	return nil
 }
 
@@ -156,7 +249,7 @@ func (cl *ConfigLoader) GetAvailableCountries() []Country {
 	return countriesList
 }
 
-// ReloadConfig reloads the configuration from the file
+// ReloadConfig reloads the configuration from the files
 func (cl *ConfigLoader) ReloadConfig() error {
 	return cl.LoadConfig()
 }

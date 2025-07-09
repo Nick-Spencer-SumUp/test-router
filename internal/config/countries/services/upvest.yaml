@@ -1,0 +1,17 @@
+# Upvest Service Configuration
+service:
+  name: "upvest"
+  base_url: "https://api.upvest.com"
+  endpoints:
+    GetAccount:
+      method: "GET"
+      uri: "/accounts"
+    CreateAccount:
+      method: "POST"
+      uri: "/accounts"
+    UpdateAccount:
+      method: "PUT"
+      uri: "/accounts/{id}"
+    DeleteAccount:
+      method: "DELETE"
+      uri: "/accounts/{id}" 

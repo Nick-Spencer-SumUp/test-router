@@ -20,10 +20,10 @@ var (
 )
 
 // InitConfig initializes the configuration loader
-func InitConfig(configPath string) error {
+func InitConfig(configDir string) error {
 	var err error
 	initOnce.Do(func() {
-		configLoader = NewConfigLoader(configPath)
+		configLoader = NewConfigLoader(configDir)
 		err = configLoader.LoadConfig()
 		if err != nil {
 			return

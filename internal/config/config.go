@@ -5,11 +5,14 @@ import (
 	"log"
 	"sync"
 
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
-type RoutesConfig map[countries.Country]countries.CountryConfig
+type (
+	Country       string
+	CountryConfig = mappings.ServiceMapping
+	RoutesConfig  = map[Country]CountryConfig
+)
 
 var (
 	configLoader *ConfigLoader
@@ -34,27 +37,43 @@ func InitConfig(configPath string) error {
 	return err
 }
 
-// SelectConfig returns the configuration for a specific country and route
-func SelectConfig(country countries.Country, route mappings.Route) (countries.CountryConfig, error) {
+// GetCountryFromConfig retrieves a country from the YAML configuration
+func GetCountryFromConfig(countryString string) (Country, error) {
 	if configLoader == nil {
-		return countries.CountryConfig{}, fmt.Errorf("configuration not initialized")
+		return "", fmt.Errorf("configuration not initialized")
+	}
+
+	countries := configLoader.GetAvailableCountries()
+	for _, country := range countries {
+		if string(country) == countryString {
+			return country, nil
+		}
+	}
+
+	return "", fmt.Errorf("country %s not found in configuration", countryString)
+}
+
+// SelectConfig returns the configuration for a specific country and route
+func SelectConfig(country Country, route mappings.Route) (CountryConfig, error) {
+	if configLoader == nil {
+		return CountryConfig{}, fmt.Errorf("configuration not initialized")
 	}
 
 	countryConfig, err := configLoader.GetCountryConfig(country)
 	if err != nil {
-		return countries.CountryConfig{}, fmt.Errorf("failed to get country config: %w", err)
+		return CountryConfig{}, fmt.Errorf("failed to get country config: %w", err)
 	}
 
 	// Validate that the route exists in the configuration
 	if _, err := countryConfig.GetEndpointConfig(route); err != nil {
-		return countries.CountryConfig{}, fmt.Errorf("route %s not supported for country %s: %w", route, country, err)
+		return CountryConfig{}, fmt.Errorf("route %s not supported for country %s: %w", route, country, err)
 	}
 
 	return countryConfig, nil
 }
 
 // GetAvailableCountries returns all available countries from the configuration
-func GetAvailableCountries() []countries.Country {
+func GetAvailableCountries() []Country {
 	if configLoader == nil {
 		return nil
 	}

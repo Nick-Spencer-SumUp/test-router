@@ -84,3 +84,11 @@ func TestConfigLoader(t *testing.T) {
 		t.Error("Expected config to be nil before loading")
 	}
 }
+
+func TestGetCountryFromConfig(t *testing.T) {
+	// Test that GetCountryFromConfig returns error when config not initialized
+	_, err := GetCountryFromConfig("US")
+	if err == nil {
+		t.Error("Expected error when config not initialized")
+	}
+}

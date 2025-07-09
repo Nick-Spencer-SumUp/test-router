@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
@@ -22,7 +22,7 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s Service) GetAccount(cfg countries.CountryConfig, accountRequest AccountRequest) (*http.Response, error) {
+func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequest) (*http.Response, error) {
 	requestBody, err := json.Marshal(accountRequest)
 	if err != nil {
 		return nil, err

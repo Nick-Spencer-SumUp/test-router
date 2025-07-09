@@ -7,7 +7,6 @@ import (
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 	"github.com/labstack/echo/v4"
 )
@@ -33,7 +32,7 @@ func (h *Handler) GetAccount(c echo.Context) error {
 
 	// TODO: decide, should config be selected in middlware and passed to handler/context?
 	countryString := c.Request().Header.Get("country")
-	country, err := countries.GetCountry(countryString)
+	country, err := config.GetCountryFromConfig(countryString)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
 	}

@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/countries"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 	"gopkg.in/yaml.v3"
 )
@@ -66,7 +65,7 @@ func (cl *ConfigLoader) LoadConfig() error {
 	// Read the config file
 	configFile := cl.configPath
 	if configFile == "" {
-		configFile = "config/routing.yaml"
+		configFile = "routing/routing.yaml"
 	}
 
 	// Get absolute path
@@ -105,23 +104,23 @@ func (cl *ConfigLoader) LoadConfig() error {
 }
 
 // GetCountryConfig returns the configuration for a specific country
-func (cl *ConfigLoader) GetCountryConfig(country countries.Country) (countries.CountryConfig, error) {
+func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error) {
 	cl.mu.RLock()
 	defer cl.mu.RUnlock()
 
 	if cl.config == nil {
-		return countries.CountryConfig{}, fmt.Errorf("configuration not loaded")
+		return CountryConfig{}, fmt.Errorf("configuration not loaded")
 	}
 
 	countryStr := string(country)
 	countryConfig, exists := cl.config.Countries[countryStr]
 	if !exists {
-		return countries.CountryConfig{}, fmt.Errorf("country %s not found", countryStr)
+		return CountryConfig{}, fmt.Errorf("country %s not found", countryStr)
 	}
 
 	serviceConfig, exists := cl.config.Services[countryConfig.Service]
 	if !exists {
-		return countries.CountryConfig{}, fmt.Errorf("service %s not found for country %s", countryConfig.Service, countryStr)
+		return CountryConfig{}, fmt.Errorf("service %s not found for country %s", countryConfig.Service, countryStr)
 	}
 
 	// Convert YAML config to ServiceMapping
@@ -143,7 +142,7 @@ func (cl *ConfigLoader) GetCountryConfig(country countries.Country) (countries.C
 }
 
 // GetAvailableCountries returns all available countries
-func (cl *ConfigLoader) GetAvailableCountries() []countries.Country {
+func (cl *ConfigLoader) GetAvailableCountries() []Country {
 	cl.mu.RLock()
 	defer cl.mu.RUnlock()
 
@@ -151,9 +150,9 @@ func (cl *ConfigLoader) GetAvailableCountries() []countries.Country {
 		return nil
 	}
 
-	countriesList := make([]countries.Country, 0, len(cl.config.Countries))
+	countriesList := make([]Country, 0, len(cl.config.Countries))
 	for countryStr := range cl.config.Countries {
-		countriesList = append(countriesList, countries.Country(countryStr))
+		countriesList = append(countriesList, Country(countryStr))
 	}
 
 	return countriesList

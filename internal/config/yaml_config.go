@@ -14,7 +14,6 @@ import (
 type YAMLConfig struct {
 	Services  map[string]YAMLService `yaml:"services"`
 	Countries map[string]YAMLCountry `yaml:"countries"`
-	// Environments map[string]YAMLEnvironment `yaml:"environments"`
 }
 
 type YAMLService struct {
@@ -34,10 +33,6 @@ type YAMLCountry struct {
 	Environments map[string]bool `yaml:"environments"`
 }
 
-// type YAMLEnvironment struct {
-// 	Services map[string]YAMLService `yaml:"services"`
-// }
-
 // Individual file structures
 type CountriesFile struct {
 	Countries map[string]YAMLCountry `yaml:"countries"`
@@ -46,10 +41,6 @@ type CountriesFile struct {
 type ServiceFile struct {
 	Service YAMLService `yaml:"service"`
 }
-
-// type EnvironmentsFile struct {
-// 	Environments map[string]YAMLEnvironment `yaml:"environments"`
-// }
 
 // ConfigLoader handles loading and parsing YAML configuration from multiple files
 type ConfigLoader struct {
@@ -86,7 +77,6 @@ func (cl *ConfigLoader) LoadConfig() error {
 	config := &YAMLConfig{
 		Services:  make(map[string]YAMLService),
 		Countries: make(map[string]YAMLCountry),
-		// Environments: make(map[string]YAMLEnvironment),
 	}
 
 	// Load countries (now includes service mappings)
@@ -98,11 +88,6 @@ func (cl *ConfigLoader) LoadConfig() error {
 	if err := cl.loadServices(configDir, config); err != nil {
 		return fmt.Errorf("failed to load services: %w", err)
 	}
-
-	// Load environments
-	// if err := cl.loadEnvironments(configDir, config); err != nil {
-	// 	return fmt.Errorf("failed to load environments: %w", err)
-	// }
 
 	// Apply environment-specific overrides
 	// Check each service for environment-specific base URLs
@@ -194,23 +179,6 @@ func (cl *ConfigLoader) loadServices(configDir string, config *YAMLConfig) error
 
 	return nil
 }
-
-// loadEnvironments loads the environments.yaml file
-// func (cl *ConfigLoader) loadEnvironments(configDir string, config *YAMLConfig) error {
-// 	environmentsPath := filepath.Join(configDir, "countries/environments.yaml")
-// 	data, err := os.ReadFile(environmentsPath)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to read environments file %s: %w", environmentsPath, err)
-// 	}
-
-// 	var environmentsFile EnvironmentsFile
-// 	if err := yaml.Unmarshal(data, &environmentsFile); err != nil {
-// 		return fmt.Errorf("failed to parse environments YAML: %w", err)
-// 	}
-
-// 	config.Environments = environmentsFile.Environments
-// 	return nil
-// }
 
 // GetCountryConfig returns the configuration for a specific country
 func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error) {

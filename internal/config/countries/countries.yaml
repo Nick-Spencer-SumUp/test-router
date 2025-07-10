@@ -2,11 +2,25 @@
 countries:
   US:
     service: "atomic"
+    environments:
+      dev: true
+      stage: false
+      live: false
   DE:
     service: "upvest"
+    environments:
+      dev: true
+      stage: false
+      live: false
   FR:
     service: "upvest"
+    environments:
+      dev: true
+      stage: false
+      live: false
   UK:
     service: "upvest"
-  CA:
-    service: "atomic" 
+    environments:
+      dev: true
+      stage: false
+      live: false

@@ -14,7 +14,7 @@ func main() {
 	// Initialize configuration
 	configDir := os.Getenv("CONFIG_DIR")
 	if configDir == "" {
-		configDir = "internal/config/countries"
+		configDir = "internal/config"
 	}
 
 	if err := config.InitConfig(configDir); err != nil {

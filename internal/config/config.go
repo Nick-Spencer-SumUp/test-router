@@ -4,13 +4,68 @@ import (
 	"fmt"
 	"log"
 	"sync"
-
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
+// Core configuration types
+type (
+	Route  string
+	Method string
+
+	ServiceMapping struct {
+		Endpoints map[Route]Endpoint
+		BaseURL   string
+	}
+
+	Endpoint struct {
+		Method Method
+		URI    string
+	}
+
+	EndpointConfig struct {
+		Endpoint string
+		BaseURL  string
+		Method   Method
+	}
+)
+
+// Route and Method constants
+const (
+	GetAccountRoute Route = "GetAccount"
+
+	GET    Method = "GET"
+	POST   Method = "POST"
+	PUT    Method = "PUT"
+	DELETE Method = "DELETE"
+)
+
+var MethodMap = map[Method]string{
+	GET:    "GET",
+	POST:   "POST",
+	PUT:    "PUT",
+	DELETE: "DELETE",
+}
+
+// ServiceMapping methods
+func (c ServiceMapping) GetEndpointConfig(route Route) (EndpointConfig, error) {
+	endpoint, ok := c.Endpoints[route]
+	if !ok {
+		return EndpointConfig{}, fmt.Errorf("route not supported")
+	}
+	return EndpointConfig{
+		Endpoint: endpoint.URI,
+		BaseURL:  c.BaseURL,
+		Method:   endpoint.Method,
+	}, nil
+}
+
+func (e EndpointConfig) GetMethod() string {
+	return MethodMap[e.Method]
+}
+
+// Configuration management types
 type (
 	Country       string
-	CountryConfig = mappings.ServiceMapping
+	CountryConfig = ServiceMapping
 	RoutesConfig  = map[Country]CountryConfig
 )
 
@@ -54,7 +109,7 @@ func GetCountryFromConfig(countryString string) (Country, error) {
 }
 
 // SelectConfig returns the configuration for a specific country and route
-func SelectConfig(country Country, route mappings.Route) (CountryConfig, error) {
+func SelectConfig(country Country, route Route) (CountryConfig, error) {
 	if configLoader == nil {
 		return CountryConfig{}, fmt.Errorf("configuration not initialized")
 	}

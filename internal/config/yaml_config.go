@@ -7,21 +7,21 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 	"gopkg.in/yaml.v3"
 )
 
 // YAMLConfig represents the combined structure from all configuration files
 type YAMLConfig struct {
-	Services     map[string]YAMLService     `yaml:"services"`
-	Countries    map[string]YAMLCountry     `yaml:"countries"`
-	Environments map[string]YAMLEnvironment `yaml:"environments"`
+	Services  map[string]YAMLService `yaml:"services"`
+	Countries map[string]YAMLCountry `yaml:"countries"`
+	// Environments map[string]YAMLEnvironment `yaml:"environments"`
 }
 
 type YAMLService struct {
-	Name      string                  `yaml:"name"`
-	BaseURL   string                  `yaml:"base_url"`
-	Endpoints map[string]YAMLEndpoint `yaml:"endpoints"`
+	Name         string                  `yaml:"name"`
+	BaseURL      string                  `yaml:"base_url"`
+	Endpoints    map[string]YAMLEndpoint `yaml:"endpoints"`
+	Environments map[string]string       `yaml:"environments"`
 }
 
 type YAMLEndpoint struct {
@@ -30,12 +30,13 @@ type YAMLEndpoint struct {
 }
 
 type YAMLCountry struct {
-	Service string `yaml:"service"`
+	Service      string          `yaml:"service"`
+	Environments map[string]bool `yaml:"environments"`
 }
 
-type YAMLEnvironment struct {
-	Services map[string]YAMLService `yaml:"services"`
-}
+// type YAMLEnvironment struct {
+// 	Services map[string]YAMLService `yaml:"services"`
+// }
 
 // Individual file structures
 type CountriesFile struct {
@@ -46,9 +47,9 @@ type ServiceFile struct {
 	Service YAMLService `yaml:"service"`
 }
 
-type EnvironmentsFile struct {
-	Environments map[string]YAMLEnvironment `yaml:"environments"`
-}
+// type EnvironmentsFile struct {
+// 	Environments map[string]YAMLEnvironment `yaml:"environments"`
+// }
 
 // ConfigLoader handles loading and parsing YAML configuration from multiple files
 type ConfigLoader struct {
@@ -78,14 +79,14 @@ func (cl *ConfigLoader) LoadConfig() error {
 	// Set default config directory
 	configDir := cl.configDir
 	if configDir == "" {
-		configDir = "internal/config/countries"
+		configDir = "internal/config"
 	}
 
 	// Load all configuration files
 	config := &YAMLConfig{
-		Services:     make(map[string]YAMLService),
-		Countries:    make(map[string]YAMLCountry),
-		Environments: make(map[string]YAMLEnvironment),
+		Services:  make(map[string]YAMLService),
+		Countries: make(map[string]YAMLCountry),
+		// Environments: make(map[string]YAMLEnvironment),
 	}
 
 	// Load countries (now includes service mappings)
@@ -99,23 +100,39 @@ func (cl *ConfigLoader) LoadConfig() error {
 	}
 
 	// Load environments
-	if err := cl.loadEnvironments(configDir, config); err != nil {
-		return fmt.Errorf("failed to load environments: %w", err)
-	}
+	// if err := cl.loadEnvironments(configDir, config); err != nil {
+	// 	return fmt.Errorf("failed to load environments: %w", err)
+	// }
 
 	// Apply environment-specific overrides
-	if envConfig, exists := config.Environments[env]; exists {
-		for serviceName, envService := range envConfig.Services {
-			if service, exists := config.Services[serviceName]; exists {
-				// Override base URL if specified
-				if envService.BaseURL != "" {
-					service.BaseURL = envService.BaseURL
-					config.Services[serviceName] = service
-				}
-				// Could add more overrides here (endpoints, etc.)
+	// Check each service for environment-specific base URLs
+	for serviceName, service := range config.Services {
+		if service.Environments != nil {
+			if envBaseURL, exists := service.Environments[env]; exists && envBaseURL != "" {
+				// Override base URL with environment-specific one
+				service.BaseURL = envBaseURL
+				config.Services[serviceName] = service
 			}
 		}
 	}
+
+	// Filter countries based on environment settings
+	filteredCountries := make(map[string]YAMLCountry)
+	for countryName, country := range config.Countries {
+		// Check if country is enabled for this environment
+		if country.Environments != nil {
+			if enabled, exists := country.Environments[env]; exists && enabled {
+				filteredCountries[countryName] = country
+			} else if country.Environments == nil {
+				// If no environment config, assume enabled
+				filteredCountries[countryName] = country
+			}
+		} else {
+			// If no environment config, assume enabled
+			filteredCountries[countryName] = country
+		}
+	}
+	config.Countries = filteredCountries
 
 	cl.config = config
 	return nil
@@ -123,7 +140,7 @@ func (cl *ConfigLoader) LoadConfig() error {
 
 // loadCountries loads the countries.yaml file (now includes service mappings)
 func (cl *ConfigLoader) loadCountries(configDir string, config *YAMLConfig) error {
-	countriesPath := filepath.Join(configDir, "countries.yaml")
+	countriesPath := filepath.Join(configDir, "countries/countries.yaml")
 	data, err := os.ReadFile(countriesPath)
 	if err != nil {
 		return fmt.Errorf("failed to read countries file %s: %w", countriesPath, err)
@@ -168,9 +185,10 @@ func (cl *ConfigLoader) loadServices(configDir string, config *YAMLConfig) error
 
 		// Add service to config
 		config.Services[serviceFile.Service.Name] = YAMLService{
-			Name:      serviceFile.Service.Name,
-			BaseURL:   serviceFile.Service.BaseURL,
-			Endpoints: serviceFile.Service.Endpoints,
+			Name:         serviceFile.Service.Name,
+			BaseURL:      serviceFile.Service.BaseURL,
+			Endpoints:    serviceFile.Service.Endpoints,
+			Environments: serviceFile.Service.Environments,
 		}
 	}
 
@@ -178,21 +196,21 @@ func (cl *ConfigLoader) loadServices(configDir string, config *YAMLConfig) error
 }
 
 // loadEnvironments loads the environments.yaml file
-func (cl *ConfigLoader) loadEnvironments(configDir string, config *YAMLConfig) error {
-	environmentsPath := filepath.Join(configDir, "environments.yaml")
-	data, err := os.ReadFile(environmentsPath)
-	if err != nil {
-		return fmt.Errorf("failed to read environments file %s: %w", environmentsPath, err)
-	}
+// func (cl *ConfigLoader) loadEnvironments(configDir string, config *YAMLConfig) error {
+// 	environmentsPath := filepath.Join(configDir, "countries/environments.yaml")
+// 	data, err := os.ReadFile(environmentsPath)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to read environments file %s: %w", environmentsPath, err)
+// 	}
 
-	var environmentsFile EnvironmentsFile
-	if err := yaml.Unmarshal(data, &environmentsFile); err != nil {
-		return fmt.Errorf("failed to parse environments YAML: %w", err)
-	}
+// 	var environmentsFile EnvironmentsFile
+// 	if err := yaml.Unmarshal(data, &environmentsFile); err != nil {
+// 		return fmt.Errorf("failed to parse environments YAML: %w", err)
+// 	}
 
-	config.Environments = environmentsFile.Environments
-	return nil
-}
+// 	config.Environments = environmentsFile.Environments
+// 	return nil
+// }
 
 // GetCountryConfig returns the configuration for a specific country
 func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error) {
@@ -215,15 +233,15 @@ func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error)
 	}
 
 	// Convert YAML config to ServiceMapping
-	serviceMapping := mappings.ServiceMapping{
+	serviceMapping := ServiceMapping{
 		BaseURL:   serviceConfig.BaseURL,
-		Endpoints: make(map[mappings.Route]mappings.Endpoint),
+		Endpoints: make(map[Route]Endpoint),
 	}
 
 	for routeName, yamlEndpoint := range serviceConfig.Endpoints {
-		route := mappings.Route(routeName)
-		endpoint := mappings.Endpoint{
-			Method: mappings.Method(yamlEndpoint.Method),
+		route := Route(routeName)
+		endpoint := Endpoint{
+			Method: Method(yamlEndpoint.Method),
 			URI:    yamlEndpoint.URI,
 		}
 		serviceMapping.Endpoints[route] = endpoint

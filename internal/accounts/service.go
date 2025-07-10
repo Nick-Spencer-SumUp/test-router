@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 )
 
 type (
@@ -28,7 +27,7 @@ func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequ
 		return nil, err
 	}
 
-	endpointConfig, err := cfg.GetEndpointConfig(mappings.GetAccountRoute)
+	endpointConfig, err := cfg.GetEndpointConfig(config.GetAccountRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +41,7 @@ func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequ
 	return response, nil
 }
 
-func (s Service) doRequest(method string, endpoint mappings.EndpointConfig, requestBody []byte) (*http.Response, error) {
+func (s Service) doRequest(method string, endpoint config.EndpointConfig, requestBody []byte) (*http.Response, error) {
 	request, err := http.NewRequest(method, endpoint.BaseURL+endpoint.Endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err

@@ -2,6 +2,10 @@
 service:
   name: "upvest"
   base_url: "https://api.upvest.com"
+  environments:
+    dev: "https://dev-api.upvest.com"
+    stage: "https://staging-api.upvest.com"
+    live: "https://api.upvest.com"
   endpoints:
     GetAccount:
       method: "GET"

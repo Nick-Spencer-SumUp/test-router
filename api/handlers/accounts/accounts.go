@@ -7,7 +7,6 @@ import (
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config/mappings"
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,7 +36,7 @@ func (h *Handler) GetAccount(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
 	}
 
-	countryConfig, err := config.SelectConfig(country, mappings.GetAccountRoute)
+	countryConfig, err := config.SelectConfig(country, config.GetAccountRoute)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, BadRequestError)
 	}

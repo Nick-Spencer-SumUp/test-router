@@ -28,9 +28,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// Setup routes
-	accountGroup := e.Group("/accounts")
-	routes.Accounts(accountGroup)
+	// Setup dynamic gateway routes (replaces hardcoded routes)
+	routes.Gateway(e)
 
 	// Setup admin routes
 	adminGroup := e.Group("/admin")

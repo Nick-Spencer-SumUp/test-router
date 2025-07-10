@@ -53,7 +53,26 @@ func GetCountryFromConfig(countryString string) (Country, error) {
 	return "", fmt.Errorf("country %s not found in configuration", countryString)
 }
 
-// SelectConfig returns the configuration for a specific country and route
+// SelectConfigByPath returns the configuration for a specific country and request path
+func SelectConfigByPath(country Country, requestPath string) (CountryConfig, error) {
+	if configLoader == nil {
+		return CountryConfig{}, fmt.Errorf("configuration not initialized")
+	}
+
+	countryConfig, err := configLoader.GetCountryConfig(country)
+	if err != nil {
+		return CountryConfig{}, fmt.Errorf("failed to get country config: %w", err)
+	}
+
+	// Validate that the path exists in the configuration
+	if _, err := countryConfig.GetEndpointConfigByPath(requestPath); err != nil {
+		return CountryConfig{}, fmt.Errorf("path %s not supported for country %s: %w", requestPath, country, err)
+	}
+
+	return countryConfig, nil
+}
+
+// SelectConfig returns the configuration for a specific country and route (deprecated - use SelectConfigByPath)
 func SelectConfig(country Country, route mappings.Route) (CountryConfig, error) {
 	if configLoader == nil {
 		return CountryConfig{}, fmt.Errorf("configuration not initialized")
@@ -86,4 +105,34 @@ func ReloadConfig() error {
 		return fmt.Errorf("configuration not initialized")
 	}
 	return configLoader.ReloadConfig()
+}
+
+// GetAllAvailablePaths returns all unique paths available across all countries
+func GetAllAvailablePaths() []string {
+	if configLoader == nil {
+		return nil
+	}
+
+	pathSet := make(map[string]bool)
+	countries := configLoader.GetAvailableCountries()
+
+	for _, country := range countries {
+		countryConfig, err := configLoader.GetCountryConfig(country)
+		if err != nil {
+			continue
+		}
+
+		paths := countryConfig.GetAvailablePaths()
+		for _, path := range paths {
+			pathSet[path] = true
+		}
+	}
+
+	// Convert set to slice
+	paths := make([]string, 0, len(pathSet))
+	for path := range pathSet {
+		paths = append(paths, path)
+	}
+
+	return paths
 }

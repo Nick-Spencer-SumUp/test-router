@@ -217,16 +217,16 @@ func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error)
 	// Convert YAML config to ServiceMapping
 	serviceMapping := mappings.ServiceMapping{
 		BaseURL:   serviceConfig.BaseURL,
-		Endpoints: make(map[mappings.Route]mappings.Endpoint),
+		Endpoints: make(map[mappings.Path]mappings.Endpoint),
 	}
 
-	for routeName, yamlEndpoint := range serviceConfig.Endpoints {
-		route := mappings.Route(routeName)
+	for pathName, yamlEndpoint := range serviceConfig.Endpoints {
+		path := mappings.Path(pathName)
 		endpoint := mappings.Endpoint{
 			Method: mappings.Method(yamlEndpoint.Method),
 			URI:    yamlEndpoint.URI,
 		}
-		serviceMapping.Endpoints[route] = endpoint
+		serviceMapping.Endpoints[path] = endpoint
 	}
 
 	return serviceMapping, nil
@@ -271,11 +271,11 @@ func (cl *ConfigLoader) ValidateConfig() error {
 	}
 
 	// Validate that all services have required endpoints
-	requiredEndpoints := []string{"GetAccount"} // Add more as needed
+	requiredPaths := []string{"/accounts"} // Add more as needed
 	for serviceName, service := range cl.config.Services {
-		for _, requiredEndpoint := range requiredEndpoints {
-			if _, exists := service.Endpoints[requiredEndpoint]; !exists {
-				return fmt.Errorf("service %s missing required endpoint %s", serviceName, requiredEndpoint)
+		for _, requiredPath := range requiredPaths {
+			if _, exists := service.Endpoints[requiredPath]; !exists {
+				return fmt.Errorf("service %s missing required path %s", serviceName, requiredPath)
 			}
 		}
 	}

@@ -3,15 +3,12 @@ service:
   name: "atomic"
   base_url: "https://api.atomic.com"
   endpoints:
-    GetAccount:
+    "/accounts":
       method: "GET"
       uri: "/accounts"
-    CreateAccount:
-      method: "POST"
-      uri: "/accounts"
-    UpdateAccount:
-      method: "PUT"
+    "/accounts/{id}":
+      method: "GET"
       uri: "/accounts/{id}"
-    DeleteAccount:
-      method: "DELETE"
-      uri: "/accounts/{id}" 
+    "/accounts/{id}/transactions":
+      method: "GET"
+      uri: "/accounts/{id}/transactions" 

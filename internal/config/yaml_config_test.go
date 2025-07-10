@@ -13,7 +13,7 @@ func TestYAMLConfigStructures(t *testing.T) {
 			"atomic": {
 				BaseURL: "https://api.atomic.com",
 				Endpoints: map[string]YAMLEndpoint{
-					"GetAccount": {
+					"/accounts": {
 						Method: "GET",
 						URI:    "/accounts",
 					},
@@ -43,20 +43,20 @@ func TestYAMLConfigStructures(t *testing.T) {
 	// Test service mapping conversion
 	serviceMapping := mappings.ServiceMapping{
 		BaseURL:   yamlConfig.Services["atomic"].BaseURL,
-		Endpoints: make(map[mappings.Route]mappings.Endpoint),
+		Endpoints: make(map[mappings.Path]mappings.Endpoint),
 	}
 
-	for routeName, yamlEndpoint := range yamlConfig.Services["atomic"].Endpoints {
-		route := mappings.Route(routeName)
+	for pathName, yamlEndpoint := range yamlConfig.Services["atomic"].Endpoints {
+		path := mappings.Path(pathName)
 		endpoint := mappings.Endpoint{
 			Method: mappings.Method(yamlEndpoint.Method),
 			URI:    yamlEndpoint.URI,
 		}
-		serviceMapping.Endpoints[route] = endpoint
+		serviceMapping.Endpoints[path] = endpoint
 	}
 
-	// Test endpoint retrieval
-	endpointConfig, err := serviceMapping.GetEndpointConfig(mappings.GetAccountRoute)
+	// Test endpoint retrieval by path
+	endpointConfig, err := serviceMapping.GetEndpointConfigByPath("/accounts")
 	if err != nil {
 		t.Fatalf("Failed to get endpoint config: %v", err)
 	}
@@ -67,6 +67,10 @@ func TestYAMLConfigStructures(t *testing.T) {
 
 	if endpointConfig.Endpoint != "/accounts" {
 		t.Errorf("Expected /accounts endpoint, got %s", endpointConfig.Endpoint)
+	}
+
+	if endpointConfig.Path != "/accounts" {
+		t.Errorf("Expected path to be /accounts, got %s", endpointConfig.Path)
 	}
 }
 

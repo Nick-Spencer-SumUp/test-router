@@ -181,7 +181,7 @@ func (cl *ConfigLoader) loadServices(configDir string, config *YAMLConfig) error
 }
 
 // GetCountryConfig returns the configuration for a specific country
-func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error) {
+func (cl *ConfigLoader) GetCountryConfig(country string) (CountryConfig, error) {
 	cl.mu.RLock()
 	defer cl.mu.RUnlock()
 
@@ -189,15 +189,14 @@ func (cl *ConfigLoader) GetCountryConfig(country Country) (CountryConfig, error)
 		return CountryConfig{}, fmt.Errorf("configuration not loaded")
 	}
 
-	countryStr := string(country)
-	countryConfig, exists := cl.config.Countries[countryStr]
+	countryConfig, exists := cl.config.Countries[country]
 	if !exists {
-		return CountryConfig{}, fmt.Errorf("country %s not found", countryStr)
+		return CountryConfig{}, fmt.Errorf("country %s not found", country)
 	}
 
 	serviceConfig, exists := cl.config.Services[countryConfig.Service]
 	if !exists {
-		return CountryConfig{}, fmt.Errorf("service %s not found for country %s", countryConfig.Service, countryStr)
+		return CountryConfig{}, fmt.Errorf("service %s not found for country %s", countryConfig.Service, country)
 	}
 
 	// Convert YAML config to ServiceMapping

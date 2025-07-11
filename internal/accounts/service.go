@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
+	"github.com/labstack/echo/v4"
 )
 
 type (
@@ -22,13 +23,15 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequest) (*http.Response, error) {
-	requestBody, err := json.Marshal(accountRequest)
+func (s Service) GetAccount(ctx echo.Context, accountRequest AccountRequest) (*http.Response, error) {
+	countryConfig := ctx.Get("countryConfig").(config.CountryConfig)
+
+	endpointConfig, err := countryConfig.GetEndpointConfig(config.GetAccountRoute)
 	if err != nil {
 		return nil, err
 	}
 
-	endpointConfig, err := cfg.GetEndpointConfig(config.GetAccountRoute)
+	requestBody, err := json.Marshal(accountRequest)
 	if err != nil {
 		return nil, err
 	}

@@ -24,3 +24,9 @@ countries:
       dev: true
       stage: false
       live: false
+  GB:
+    service: "atomic"
+    environments:
+      dev: true
+      stage: false
+      live: false

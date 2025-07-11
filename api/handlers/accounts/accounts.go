@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,8 +18,6 @@ type ErrorResponse struct {
 
 var (
 	InternalServerError       ErrorResponse = ErrorResponse{Error: "internal server error"}
-	CountryNotSupportedError  ErrorResponse = ErrorResponse{Error: "country not supported yet"}
-	NoConfigurationForCountry ErrorResponse = ErrorResponse{Error: "no configuration for country"}
 	BadRequestError           ErrorResponse = ErrorResponse{Error: "bad request"}
 )
 
@@ -31,23 +28,13 @@ func New(accountService accounts.Service) *Handler {
 }
 
 func (h *Handler) GetAccount(c echo.Context) error {
-	countryString := c.Get("country").(string)
-	country, err := config.GetCountryFromConfig(countryString)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
-	}
-
-	countryConfig, err := config.SelectConfig(country, config.GetAccountRoute)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, NoConfigurationForCountry)
-	}
 
 	var requestBody accounts.AccountRequest
 	if err := c.Bind(&requestBody); err != nil {
 		return c.JSON(http.StatusBadRequest, BadRequestError)
 	}
 
-	response, err := h.AccountService.GetAccount(countryConfig, requestBody)
+	response, err := h.AccountService.GetAccount(c, requestBody)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, InternalServerError)
 	}

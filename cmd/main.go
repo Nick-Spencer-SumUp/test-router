@@ -28,7 +28,7 @@ func main() {
 	// Add middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(authMiddleware.GetCountryFromToken)
+	e.Use(authMiddleware.SetConfigFromToken)
 
 	// Setup routes
 	accountGroup := e.Group("/accounts")

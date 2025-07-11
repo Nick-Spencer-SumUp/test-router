@@ -109,7 +109,7 @@ func GetCountryFromConfig(countryString string) (Country, error) {
 }
 
 // SelectConfig returns the configuration for a specific country and route
-func SelectConfig(country Country, route Route) (CountryConfig, error) {
+func SelectConfig(country string, route Route) (CountryConfig, error) {
 	if configLoader == nil {
 		return CountryConfig{}, fmt.Errorf("configuration not initialized")
 	}

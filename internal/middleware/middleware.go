@@ -5,11 +5,21 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
-func GetCountryFromToken(next echo.HandlerFunc) echo.HandlerFunc {
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+var (
+	CountryNotSupportedError ErrorResponse = ErrorResponse{Error: "country not supported yet"}
+	NoConfigurationForCountry ErrorResponse = ErrorResponse{Error: "no configuration for country"}
+)
+
+func SetConfigFromToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		token := c.Request().Header.Get("Authorization")
 		if token == "" {
@@ -23,8 +33,13 @@ func GetCountryFromToken(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, fmt.Sprintf("Invalid token: %v", err))
 		}
 
-		// You can now use the country value or store it in context
+		countryConfig, err := config.SelectConfig(country, config.GetAccountRoute)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
+		}
+
 		c.Set("country", country)
+		c.Set("countryConfig", countryConfig)
 
 		return next(c)
 	}

@@ -1,11 +1,11 @@
 # Upvest Service Configuration
 service:
   name: "upvest"
-  base_url: "https://api.upvest.com"
+  base_url: "http://upvest-service.fleet.dev.eu-west-1.sumup.net"
   environments:
-    dev: "https://dev-api.upvest.com"
-    stage: "https://staging-api.upvest.com"
-    live: "https://api.upvest.com"
+    dev: "http://upvest-service.fleet.dev.eu-west-1.sumup.net"
+    stage: "http://upvest-service.fleet.dev.eu-west-1.sumup.net"
+    live: "http://upvest-service.fleet.dev.eu-west-1.sumup.net"
   endpoints:
     GetAccount:
       method: "GET"
@@ -15,7 +15,7 @@ service:
       uri: "/accounts"
     UpdateAccount:
       method: "PUT"
-      uri: "/accounts/{id}"
+      uri: "/accounts/%s"
     DeleteAccount:
       method: "DELETE"
-      uri: "/accounts/{id}" 
+      uri: "/accounts/%s" 

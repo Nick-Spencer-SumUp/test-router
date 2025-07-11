@@ -257,7 +257,7 @@ func (cl *ConfigLoader) ValidateConfig() error {
 	}
 
 	// Validate that all services have required endpoints
-	requiredEndpoints := []string{"GetAccount"} // Add more as needed
+	requiredEndpoints := []string{"GetAccount", "UpdateAccount", "DeleteAccount"}
 	for serviceName, service := range cl.config.Services {
 		for _, requiredEndpoint := range requiredEndpoints {
 			if _, exists := service.Endpoints[requiredEndpoint]; !exists {

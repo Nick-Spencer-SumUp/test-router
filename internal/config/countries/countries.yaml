@@ -9,7 +9,7 @@ countries:
   DE:
     service: "upvest"
     environments:
-      dev: true
+      dev: false
       stage: false
       live: false
   FR:

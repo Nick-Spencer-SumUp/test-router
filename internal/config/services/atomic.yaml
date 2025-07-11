@@ -1,21 +1,21 @@
 # Atomic Service Configuration
 service:
   name: "atomic"
-  base_url: "https://api.atomic.com"
+  base_url: "https://api.chucknorris.io"
   environments:
-    dev: "https://dev-api.atomic.com"
-    stage: "https://staging-api.atomic.com"
+    dev: "https://api.chucknorris.io"
+    stage: "https://api.chucknorris.io"
     live: "https://api.atomic.com"
   endpoints:
     GetAccount:
       method: "GET"
-      uri: "/accounts"
+      uri: "/jokes/random"
     CreateAccount:
       method: "POST"
       uri: "/accounts"
     UpdateAccount:
       method: "PUT"
-      uri: "/accounts/{id}"
+      uri: "/accounts/%s"
     DeleteAccount:
       method: "DELETE"
-      uri: "/accounts/{id}" 
+      uri: "/accounts/%s" 

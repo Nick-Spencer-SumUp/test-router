@@ -6,6 +6,7 @@ import (
 
 	"github.com/Nick-Spencer-SumUp/test-router/api/routes"
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
+	authMiddleware "github.com/Nick-Spencer-SumUp/test-router/internal/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -27,6 +28,7 @@ func main() {
 	// Add middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(authMiddleware.GetCountryFromToken)
 
 	// Setup routes
 	accountGroup := e.Group("/accounts")

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"io"
 	"net/http"
 
@@ -14,10 +13,15 @@ type Handler struct {
 	AccountService accounts.Service
 }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 var (
-	BadRequestError          = errors.New("bad request")
-	InternalServerError      = errors.New("internal server error")
-	CountryNotSupportedError = errors.New("country not supported")
+	InternalServerError       ErrorResponse = ErrorResponse{Error: "internal server error"}
+	CountryNotSupportedError  ErrorResponse = ErrorResponse{Error: "country not supported yet"}
+	NoConfigurationForCountry ErrorResponse = ErrorResponse{Error: "no configuration for country"}
+	BadRequestError           ErrorResponse = ErrorResponse{Error: "bad request"}
 )
 
 func New(accountService accounts.Service) *Handler {
@@ -27,10 +31,7 @@ func New(accountService accounts.Service) *Handler {
 }
 
 func (h *Handler) GetAccount(c echo.Context) error {
-	// TODO: get locale from request context, likely from token claims or internal api call
-
-	// TODO: decide, should config be selected in middlware and passed to handler/context?
-	countryString := c.Request().Header.Get("country")
+	countryString := c.Get("country").(string)
 	country, err := config.GetCountryFromConfig(countryString)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
@@ -38,7 +39,7 @@ func (h *Handler) GetAccount(c echo.Context) error {
 
 	countryConfig, err := config.SelectConfig(country, config.GetAccountRoute)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, BadRequestError)
+		return c.JSON(http.StatusBadRequest, NoConfigurationForCountry)
 	}
 
 	var requestBody accounts.AccountRequest

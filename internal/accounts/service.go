@@ -3,6 +3,7 @@ package accounts
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
@@ -32,7 +33,8 @@ func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequ
 		return nil, err
 	}
 
-	response, err := s.doRequest(endpointConfig.GetMethod(), endpointConfig, requestBody)
+	// No path parameters needed for GetAccount
+	response, err := s.doRequest(endpointConfig.GetMethod(), endpointConfig, requestBody, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +43,17 @@ func (s Service) GetAccount(cfg config.CountryConfig, accountRequest AccountRequ
 	return response, nil
 }
 
-func (s Service) doRequest(method string, endpoint config.EndpointConfig, requestBody []byte) (*http.Response, error) {
-	request, err := http.NewRequest(method, endpoint.BaseURL+endpoint.Endpoint, bytes.NewBuffer(requestBody))
+// doRequest handles HTTP requests with optional path parameter substitution using fmt.Sprintf
+func (s Service) doRequest(method string, endpoint config.EndpointConfig, requestBody []byte, pathParams []interface{}) (*http.Response, error) {
+	// Build the URL with path parameters if provided
+	var finalURL string
+	if len(pathParams) > 0 {
+		finalURL = endpoint.BaseURL + fmt.Sprintf(endpoint.Endpoint, pathParams...)
+	} else {
+		finalURL = endpoint.BaseURL + endpoint.Endpoint
+	}
+
+	request, err := http.NewRequest(method, finalURL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}

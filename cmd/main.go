@@ -2,24 +2,20 @@ package main
 
 import (
 	"log"
-	"os"
 
-	"github.com/Nick-Spencer-SumUp/test-router/api/routes"
-	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
+	accountsHandler "github.com/Nick-Spencer-SumUp/test-router/api/handlers/accounts"
+	accountsService "github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
 	authMiddleware "github.com/Nick-Spencer-SumUp/test-router/internal/middleware"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	// Initialize configuration
-	configDir := os.Getenv("CONFIG_DIR")
-	if configDir == "" {
-		configDir = "internal/config"
-	}
-
-	if err := config.InitConfig(configDir); err != nil {
-		log.Fatalf("Failed to initialize configuration: %v", err)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	// Initialize echo server
@@ -30,13 +26,11 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(authMiddleware.SetConfigFromToken)
 
-	// Setup routes
-	accountGroup := e.Group("/accounts")
-	routes.Accounts(accountGroup)
+	accountsService := accountsService.New()
+	accountsHandler := accountsHandler.New(*accountsService)
 
-	// Setup admin routes
-	adminGroup := e.Group("/admin")
-	routes.Admin(adminGroup)
+	// Setup routes
+	e.GET("/jokes/random", accountsHandler.GetAccount)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":8080"))

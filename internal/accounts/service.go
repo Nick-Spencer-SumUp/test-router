@@ -3,7 +3,6 @@ package accounts
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
@@ -14,6 +13,13 @@ type (
 	AccountRequest struct {
 		Mid string `json:"mid"`
 	}
+
+	AccountResponse struct {
+		AccountUID string `json:"account_uid"`
+		Status     string `json:"status"`
+		DeletedAt  string `json:"deleted_at"`
+		IsLocked   bool   `json:"is_locked"`
+	}
 )
 
 type Service struct {
@@ -23,40 +29,37 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s Service) GetAccount(ctx echo.Context, accountRequest AccountRequest) (*http.Response, error) {
-	countryConfig := ctx.Get("countryConfig").(config.CountryConfig)
+func (s Service) GetAccount(ctx echo.Context, accountRequest AccountRequest) (*AccountResponse, error) {
+	countryConfig := ctx.Get("countryConfig").(config.Service)
 
-	endpointConfig, err := countryConfig.GetEndpointConfig(config.GetAccountRoute)
-	if err != nil {
-		return nil, err
-	}
+	proxyPath := countryConfig.BaseUrl + ctx.Request().URL.Path
+	method := ctx.Request().Method
 
 	requestBody, err := json.Marshal(accountRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	// No path parameters needed for GetAccount
-	response, err := s.doRequest(endpointConfig.GetMethod(), endpointConfig, requestBody, nil)
+	response, err := s.doRequest(method, proxyPath, requestBody)
 	if err != nil {
 		return nil, err
 	}
 
-	// Return the raw response without decoding it for streaming
-	return response, nil
-}
+	defer response.Body.Close()
 
-// doRequest handles HTTP requests with optional path parameter substitution using fmt.Sprintf
-func (s Service) doRequest(method string, endpoint config.EndpointConfig, requestBody []byte, pathParams []interface{}) (*http.Response, error) {
-	// Build the URL with path parameters if provided
-	var finalURL string
-	if len(pathParams) > 0 {
-		finalURL = endpoint.BaseURL + fmt.Sprintf(endpoint.Endpoint, pathParams...)
-	} else {
-		finalURL = endpoint.BaseURL + endpoint.Endpoint
+	// validate the response
+	var accountResponse AccountResponse
+	err = json.NewDecoder(response.Body).Decode(&accountResponse)
+	if err != nil {
+		return nil, err
 	}
 
-	request, err := http.NewRequest(method, finalURL, bytes.NewBuffer(requestBody))
+	return &accountResponse, nil
+}
+
+func (s Service) doRequest(method string, path string, requestBody []byte) (*http.Response, error) {
+
+	request, err := http.NewRequest(method, path, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}

@@ -3,12 +3,12 @@ module github.com/Nick-Spencer-SumUp/test-router
 go 1.23.5
 
 require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.4
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

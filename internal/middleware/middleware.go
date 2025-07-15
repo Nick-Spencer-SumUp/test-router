@@ -33,7 +33,12 @@ func SetConfigFromToken(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, fmt.Sprintf("Invalid token: %v", err))
 		}
 
-		countryConfig, err := config.SelectConfig(country,)
+		countryType, err := config.CountryFromString(country)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, fmt.Sprintf("Invalid country: %v", err))
+		}
+
+		countryConfig, err := config.CountryServiceMap.SelectConfig(countryType)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, CountryNotSupportedError)
 		}

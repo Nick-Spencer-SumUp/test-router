@@ -5,6 +5,7 @@ import (
 
 	accountsHandler "github.com/Nick-Spencer-SumUp/test-router/api/handlers/accounts"
 	accountsService "github.com/Nick-Spencer-SumUp/test-router/internal/accounts"
+	"github.com/Nick-Spencer-SumUp/test-router/internal/config"
 	authMiddleware "github.com/Nick-Spencer-SumUp/test-router/internal/middleware"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -17,6 +18,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
+
+	config.InitCountryServiceMapping()
 
 	// Initialize echo server
 	e := echo.New()
